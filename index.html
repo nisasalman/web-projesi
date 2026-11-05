@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Harçlığım | Bütçe Takibi</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f5fb;color:#25283a}header{background:#6c63ff;color:white;padding:26px;text-align:center}header h1{margin:0 0 8px}main{max-width:1000px;margin:28px auto;padding:0 18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}.card,.panel{background:white;border-radius:14px;padding:22px;box-shadow:0 5px 18px #2221}.card h3{margin:0 0 12px;font-size:15px;color:#62657a}.amount{font-size:25px;font-weight:bold;color:#6258e8}.panel{margin-bottom:20px}.panel h2{margin:0 0 18px;font-size:20px}form{display:grid;grid-template-columns:1fr 2fr 1fr auto;gap:12px;align-items:end}label{display:block;font-size:13px;margin-bottom:7px;color:#555970}input,select{width:100%;padding:12px;border:1px solid #d9dbea;border-radius:8px;font-size:14px}button{border:0;border-radius:8px;background:#6258e8;color:white;padding:12px 18px;font-weight:600;cursor:pointer}ul{list-style:none;padding:0;margin:0}li{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #eee}.income{color:#15966a}.expense{color:#df4c61}.delete{background:#fff0f2;color:#d33;padding:7px 10px;margin-left:12px}.empty{text-align:center;padding:20px;color:#8b8ea0}@media(max-width:700px){.cards{grid-template-columns:1fr}form{grid-template-columns:1fr}}
+</style></head>
+<body><header><h1>Harçlığım</h1><p>Gelirini ve giderini kolayca takip et</p></header><main>
+<section class="cards"><div class="card"><h3>Toplam Gelir</h3><div class="amount" id="income">0 TL</div></div><div class="card"><h3>Toplam Gider</h3><div class="amount" id="expense">0 TL</div></div><div class="card"><h3>Kalan Bütçe</h3><div class="amount" id="balance">0 TL</div></div></section>
+<section class="panel"><h2>Gelir / Gider Ekle</h2><form id="form">
+<div><label>İşlem Türü</label><select id="type"><option value="income">Gelir</option><option value="expense">Gider</option></select></div>
+<div><label>Açıklama</label><input id="desc" placeholder="Örn: Burs, yemek, ulaşım" required></div>
+<div><label>Tutar (TL)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="Örn: 500" required></div><button>İşlem Ekle</button></form></section>
+<section class="panel"><h2>İşlemlerim</h2><ul id="items"></ul><div id="empty" class="empty">Henüz işlem eklenmedi.</div></section></main>
+<script>
+let data=JSON.parse(localStorage.getItem('harcligimIslemler')||'[]');
+const fmt=n=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(n);
+function save(){localStorage.setItem('harcligimIslemler',JSON.stringify(data))}
+function draw(){let inc=0,exp=0;const ul=document.getElementById('items');ul.innerHTML='';
+data.forEach((x,i)=>{x.type==='income'?inc+=x.amount:exp+=x.amount;let li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=x.desc+' · '+(x.type==='income'?'Gelir':'Gider');b.className=x.type;b.textContent=(x.type==='income'?'+':'−')+fmt(x.amount);let d=document.createElement('button');d.className='delete';d.textContent='Sil';d.onclick=()=>{data.splice(i,1);save();draw()};b.appendChild(d);li.append(a,b);ul.appendChild(li)});
+document.getElementById('income').textContent=fmt(inc);document.getElementById('expense').textContent=fmt(exp);document.getElementById('balance').textContent=fmt(inc-exp);document.getElementById('empty').style.display=data.length?'none':'block'}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();let desc=document.getElementById('desc').value.trim(),amount=Number(document.getElementById('amount').value);if(!desc||!Number.isFinite(amount)||amount<=0){alert('Açıklama ve sıfırdan büyük tutar gir.');return}data.push({type:document.getElementById('type').value,desc,amount});save();draw();e.target.reset()});draw();
+</script></body></html>
